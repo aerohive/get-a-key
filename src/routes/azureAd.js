@@ -8,7 +8,6 @@ var AzureAdOAuth2Strategy = require('passport-azure-ad-oauth2').Strategy;
 
 var Account = require("../bin/models/account");
 
-
 passport.serializeUser(function (user, done) {
     done(null, user);
 });
@@ -18,7 +17,14 @@ passport.deserializeUser(function (user, done) {
 
 
 function getAzureAdAccount(req, res, next) {
-    Account
+    if (req.query.error) {
+        console.error("\x1b[31mERROR\x1b[0m:", "AzureAD error: " + req.query.error);
+        if (req.query.error_description) console.error("\x1b[31mERROR\x1b[0m:", "AzureAD message: " + req.query.error_description.replace(/\+/g, " "));
+        res.render('error', {
+            status: req.query.error,
+            message: req.query.error_description.replace(/\+/g, " ")
+        });
+    } else Account
         .findById(req.params.account_id)
         .populate("azureAd")
         .exec(function (err, account) {
@@ -51,13 +57,14 @@ router.get('/:account_id/callback', getAzureAdAccount,
     function (req, res) {
         if (req.session.passport.user.email) req.session.email = req.session.passport.user.email;
         else req.session.email = req.session.passport.user.upn;
+        console.info("\x1b[32minfo\x1b[0m:", 'User ' + req.session.passport.user.upn + ' logged in');
         res.redirect('/web-app/');
     }
 );
 
 /* Handle Logout */
 router.get('/:account_id/logout/', function (req, res) {
-    console.log("User " + req.session.passport.user.upn + " is now logged out.");
+    console.log("\x1b[32minfo\x1b[0m:", "User " + req.session.passport.user.upn + " is now logged out.");
     req.logout();
     req.session.destroy();
     res.redirect('/login/:account_id/');
