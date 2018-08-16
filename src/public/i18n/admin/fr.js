@@ -9,6 +9,7 @@ var fr = {
         loginUrl: "LoginURL (Pour configurer le portail captif):",
         userAccount: "Comptes",
         userGroup: "Groupe Utilisateurs",
+        customizeDefaultPhonePrefix: "Personnaliser le préfixe télephonique par défaut"
     },
     custom: {
         custom: "Personnalisation",
@@ -16,7 +17,7 @@ var fr = {
             logo: "Logos",
             header: "Logo d'entête",
             login: "Logo de la page de Login"
-            },
+        },
         headerLogo: "Header Logo",
         loginLogo: "Login Logo",
         preview: "Prévisualisation",
@@ -54,45 +55,21 @@ var fr = {
             signinURL: "Signin URL:",
             callbackURL: "Callback URL:",
             logoutURL: "logoutURL:",
-        },
+            external: "Autoriser les utilisateurs externe à obtenir une clé",
+            unlicensed: "Autoriser les utilisateurs sans licence",
+            groupsFilter: "N'autoriser que les utilisateurs appartenant aux groupes utilisateurs suivants"
+        },        
         adfs: {
             adfs: "Service de Fédération AD",
-            params: "configuration ADFS"
+            params: "configuration ADFS",
+            getAdfsMetadata: "Télecharger les Metadonnées ADFS",
+            pasteAdfsMetadata: "Coller les Metadonnées ADFS",
+            getAppCertificate: "Télecharger le certificat Get-a-Key",
+            server: "FQDN du serveur ADFS"
         },
-        modal: {
-            save_title: "Sauvegarder les modifications?",
-            disable_message: "Attention, en désactivant cette méthode, l'ensemble des paramètres correspondants seront supprimés.",
-            button: {
-                cancel: "Annuler",
-                yes: "Confirmer"
-            },
-            confirm: {
-                title: "Demande de confirmation",
-                message_delete: "Êtes vous sûr de vouloir supprimer votre clé?"
-            },
-            notFound: {
-                title: "Aucune clé trouvée",
-                message_notFound: "Aucune clé trouvée pour l'utilisateur {{user}}.",
-            },
-
-            warning: {
-                title: "Quelque chose s'est mal passé...",
-                instruction: "Veuillez contacter votre administrateur en communiquant les information ci-desssous:",
-                status: "Status HTTP",
-                message: "Message",
-                code: "Code"
-            },
-            button: {
-                close: 'Fermer',
-                back: 'Retour',
-                cancel: "Annuler",
-                yes: "Oui"
-            },
-        }
     },
-
     modal: {
-        done: {
+        save: {
             title: "Sauvegarde effectuée",
             configuration: "Nouvelle configuration sauvegardée.",
             authentication: "Nouveaux paramètres d'authentification sauvegardés.",

@@ -1,0 +1,192 @@
+doctype html
+html
+    head
+        title= title
+        // [if IE]
+        meta(http-equiv="X-UA-Compatible" content="IE=10; IE=EDGE")
+        // [endif]
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+
+        link(rel='stylesheet' href='/css/ah-tm.tags.css')
+        link(rel="stylesheet" href="/bower_components/angular-material/angular-material.min.css")
+        link(rel='stylesheet' href='/css/ah-tm.login.css')
+        link(rel='stylesheet' href='/css/ah-tm.help.css')
+        link(rel="stylesheet" href="/bower_components/material-design-icons/iconfont/material-icons.css")
+
+    body(ng-app="gak" ng-controller="AppCtrl").icons-docs
+        div(id="loading")
+                        
+        header.md-page-header
+            div.header
+            md-toolbar.header.fixed(layout='row')
+                h1.logo.md-toolbar-tools
+                    img(src="/images/logo_w.png" alt="Aerohive")
+                span(flex)
+
+                             
+        div.page-footer
+            span © 2017 Aerohive Networks. All Rights Reserved.
+
+
+        div(layout="column" layout-align="center center" layout-gt-sm="row" layout-align-gt-sm="center start")
+
+            div.panel
+                div.inside(md-whiteframe="5" style="width: 100%" )
+                    md-toolbar
+                        div.md-toolbar-tools
+                            h2 AzureAD Configuration Help
+                    md-content(layout="column" layout-padding)
+                        h3 Get all the information to configure your AzureAD API
+                        div 
+                            span You will find here the information needed to configure the AzureAD APIs (
+                            b="signIn URL"
+                            span , 
+                            b=" callback URL "
+                            span and 
+                            b=" logout URL"
+                            span ).
+                        img(src="/web-app/help/azureAD/params.png" style="width: 50%;margin: auto;")
+                        h3 Connect to you 
+                            a(href="https://portal.azure.com/" target=_blank) AzureAD portal
+                        div 
+                            span On your Azure Portal, click on 
+                            b=" App Registration "
+                            span (if it's not available, click on 
+                            b=" More Services "
+                            span to find it).
+                        img(src="/web-app/help/azureAD/azure1.png" style="width: 50%;margin: auto;")
+                        h3 Create a new App
+                        div 
+                            span Click on 
+                            b=" Add " 
+                            span and: 
+                        ul(style="list-style-type: circle")
+                            li Fill a name for the App
+                            li 
+                                spanSelect the 
+                                b=" Web App / API "
+                                span type
+                            li 
+                                span Put the 
+                                b=" SignIn URL "
+                                span from the Settings Page in the Sign-on URL field
+                        img(src="/web-app/help/azureAD/azure2.png" style="width: 50%;margin: auto;")
+                        h3 Logout URL
+                        span The Logout URL is the URL where to send back the user after the logout.
+                        div
+                            span Put here the 
+                            b=" logout URL "
+                            span from the 
+                            b=" Settings page"
+                            span .
+                        img(src="/web-app/help/azureAD/azure3.png" style="width: 50%;margin: auto;")
+                        h3 Callback URL
+                        div
+                            span Once the App is created, you will be able to configure the Callback URL with the 
+                            b=" Callback URL "
+                            span from the settings page.
+                        span The Callback URL is the URL where Azure is sending the authorization token, to validate the user authentication against the App.
+                        br
+                        div
+                            span Remove the pre-configured callback URL, add yours, and click 
+                            b=" Save"
+                            span .
+                        img(src="/web-app/help/azureAD/azure4.png" style="width: 50%;margin: auto;")
+                        h3 Permissions
+                        span This App requiring some basic permissions to be able to work properly.
+                        span To configure them
+                        ul(style="list-style-type: circle")
+                            li 
+                                span Click on 
+                                b=" Required Permissions "
+                                span and then on 
+                                b=" Windows Azure Active Directory "
+                                span to edit the permissions.
+                            li 
+                                span Check the
+                                b=" Sign in and read user profile "
+                                span and 
+                                b=" Access the directory as the signed-in user "
+                                span permissions
+                            li 
+                                span Click
+                                b=" Save"
+                            li 
+                                span Click 
+                                b=" Grant Permissions"
+                        img(src="/web-app/help/azureAD/permissions.png" style="width: 50%;margin: auto;")
+                        h3 App Key
+                        div 
+                            span You now have to generate a unique key for this App. Under the 
+                            b=" Keys "
+                            span section, create a new key by
+                        ul
+                            li putting a new name
+                            li setting the key validity
+                            li clicking Save
+                        img(src="/web-app/help/azureAD/azure5.png" style="width: 50%;margin: auto;")
+                        div 
+                            span The Key value in only displayed once you click 
+                            b=" Save "
+                            span , and you will not be able to retrieve it after that.
+                        div 
+                            span Copy the Key and paste it into the 
+                            b=" Application Key "
+                            span field on the
+                            b=" Settings page"
+                            span .
+                        h3 Retrieve the lasts parameters
+                        span The easiest way to find the lasts parameters (Application ID, Tenant and Resource) is to display the app Manifest.
+                        div 
+                            span To do so, you can click on the 
+                            b=" Manifest "
+                            span button.
+                        img(src="/web-app/help/azureAD/azure6.png" style="width: 50%;margin: auto;")
+                        span You will find here:
+                        ul 
+                            li 
+                                span The
+                                b=" Application Id "
+                                span value, which is name 
+                                b=" AppId"
+                            li 
+                                span The
+                                b=" Tenant "
+                                span value, which is the FQDN of the 
+                                b=" identifierUris"
+                            li 
+                                span The
+                                b=" Resource "
+                                span value, which is the
+                                b=" resourceAppId "
+                                span value (at the bottom of the page) 
+                    
+                        
+
+
+    script(type="text/javascript").
+        function fadeIn(element){  
+            var i = 1;
+            var f = 0.5;  
+            setTimeout(function(){
+                element.style.opacity = parseFloat(element.style.opacity) - (f * i * i);
+                i++;
+                if (element.style.opacity < 0 || i > 50) element.parentNode.removeChild(element);
+                else fadeIn(element);
+                }, 40);
+        }
+        document.addEventListener("DOMContentLoaded", function(event) {
+            var element = document.getElementById("loading"); 
+            element.style.opacity = 1.0;                
+            fadeIn(element);
+        });
+    script(src="/custom/colors/default")
+    script(src="/bower_components/angular/angular.min.js")
+    script(src="/bower_components/angular-aria/angular-aria.js")
+    script(src="/bower_components/angular-animate/angular-animate.min.js")
+    script(src="/bower_components/angular-material/angular-material.js")
+    script(src="/bower_components/angular-messages/angular-messages.js")
+    script(src="/bower_components/angular-route/angular-route.min.js")
+    script(src="/bower_components/angular-bootstrap/ui-bootstrap.js")
+    script(src="/bower_components/angular-sanitize/angular-sanitize.min.js")
+    script(src="/web-app/help/app.js")

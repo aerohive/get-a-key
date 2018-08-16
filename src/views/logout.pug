@@ -2,6 +2,9 @@ doctype html
 html
     head
         title= title
+        // [if IE]
+        meta(http-equiv="X-UA-Compatible" content="IE=10; IE=EDGE")
+        // [endif]
         script(language="JavaScript" type="text/javascript" src='/js/jquery-2.1.1.min.js')
         script(language="JavaScript" type="text/javascript" src='/js/bootstrap.min.js')
         link(rel='stylesheet' href='/css/ah-styles.min.css')
@@ -16,7 +19,7 @@ html
                         img(src="/images/logo.png" alt="Aerohive" class="ah-logo")
                         div.ah-growing-hives
                         div.page-footer
-                            span(style="border: none;") © 2016 Aerohive Networks. All Rights Reserved.
+                            span(style="border: none;") © 2017 Aerohive Networks. All Rights Reserved.
                                 div.login-box.grid_15
                         div.login-box-login
                             h1 You are now logged out

@@ -1,9 +1,13 @@
-doctype html5
+doctype html
 html
     head
         title= title
+        // [if IE]
+        meta(http-equiv="X-UA-Compatible" content="IE=10; IE=EDGE")
+        // [endif]
         meta(name="viewport" content="width=device-width, initial-scale=1")
 
+        link(rel="stylesheet" href="/bower_components/intl-tel-input/build/css/intlTelInput.css")
         link(rel="stylesheet" href="/bower_components/material-design-icons/iconfont/material-icons.css")
         link(rel="stylesheet" href="/bower_components/angular-material/angular-material.min.css")
         link(rel='stylesheet' href='/css/ah-tm.dashboard.css')
@@ -12,9 +16,23 @@ html
         link(rel='stylesheet' href='/css/ah-tm.md-table.css')
         link(rel='stylesheet' href='/css/ah-tm.md-list.css')
         link(rel='stylesheet' href='/css/ah-tm.header.css')
-        link(rel='stylesheet' href='/css/ah-tm.label.css')
-        link(rel='stylesheet' href='/css/ah-tm.datetime.css')
 
+        script(type="text/javascript").
+            function fadeIn(element){  
+                var i = 1;
+                var f = 0.5;  
+                setTimeout(function(){
+                    element.style.opacity = parseFloat(element.style.opacity) - (f * i * i);
+                    i++;
+                    if (element.style.opacity < 0 || i > 50) element.parentNode.removeChild(element);
+                    else fadeIn(element);
+                    }, 40);
+            }
+            document.addEventListener("DOMContentLoaded", function(event) {
+                var element = document.getElementById("loading"); 
+                element.style.opacity = 1.0;                
+                fadeIn(element);
+            });
 
         
     body(ng-app="gak" ng-controller="AppCtrl").icons-docs
@@ -56,30 +74,13 @@ html
                 md-tab(md-on-select="select('customization')" md-active="active('customization')")
                     md-tab-label {{'custom' | translate}}
             div(ng-view)
-            script(src="/bower_components/angular/angular.min.js")
 
-
-
-
-        script(type="text/javascript").
-            function fadeIn(element){  
-                var i = 1;
-                var f = 0.5;  
-                setTimeout(function(){
-                    element.style.opacity = parseFloat(element.style.opacity) - (f * i * i);
-                    i++;
-                    if (element.style.opacity < 0 || i > 50) element.parentNode.removeChild(element);
-                    else fadeIn(element);
-                    }, 40);
-            }
-            document.addEventListener("DOMContentLoaded", function(event) {
-                var element = document.getElementById("loading"); 
-                element.style.opacity = 1.0;                
-                fadeIn(element);
-            });
+        script(src="/bower_components/jquery/dist/jquery.min.js")
+        script(src="/bower_components/angular/angular.min.js")
 
         script(src="/i18n/admin/en.js")
         script(src="/i18n/admin/fr.js")
+        script(src="/i18n/admin/nl.js")
 
         script(src="/custom/colors/default")
         script(src="/bower_components/angular-aria/angular-aria.js")
@@ -89,6 +90,9 @@ html
         script(src="/bower_components/angular-route/angular-route.min.js")
         script(src="/bower_components/angular-bootstrap/ui-bootstrap.js")
         script(src="/bower_components/angular-translate/angular-translate.min.js")
+        script(src="/bower_components/intl-tel-input/build/js/intlTelInput.min.js")
+        script(src="/bower_components/intl-tel-input/build/js/utils.js")
+        script(src="/bower_components/ng-intl-tel-input/dist/ng-intl-tel-input.min.js")
         
         script(src="/web-app/admin/customization/tinycolor.js")
         script(src="/web-app/admin/customization/mdColorPicker.min.js")

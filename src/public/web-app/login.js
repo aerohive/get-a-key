@@ -13,13 +13,15 @@ login
                 'default': '200' // by default use shade 400 from the pink palette for primary intentions
             });
     }).config(function ($translateProvider) {
-        $translateProvider.useMissingTranslationHandlerLog();
+        //$translateProvider.useMissingTranslationHandlerLog();
         $translateProvider
             .translations('en', en)
             .translations('fr', fr)
-            .registerAvailableLanguageKeys(['en', 'fr'], {
+            .translations('nl', nl)
+            .registerAvailableLanguageKeys(['en', 'fr', 'nl'], {
                 'en_*': 'en',
-                'fr_*': 'fr'
+                'fr_*': 'fr',
+		'nl_*': 'nl'
             })
             .determinePreferredLanguage()
             .fallbackLanguage('en')
@@ -30,7 +32,7 @@ login
 login.controller('LoginCtrl', function ($scope, $translate) {
     $scope.translate = function (langKey) {
         $translate.use(langKey);
-    }
+    };
     $scope.openMenu = function ($mdOpenMenu, ev) {
         originatorEv = ev;
         $mdOpenMenu(ev);

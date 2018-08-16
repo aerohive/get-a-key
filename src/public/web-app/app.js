@@ -9,7 +9,8 @@ var gak = angular.module("gak", [
     'ngSanitize',
     'ngMaterial',
     'ngMessages',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'ngIntlTelInput'
 ]);
 
 gak
@@ -46,14 +47,25 @@ gak
         // extra
         $httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache';
         $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
-    }]).config(function ($translateProvider) {
-        $translateProvider.useMissingTranslationHandlerLog();
+    }]).config(function (ngIntlTelInputProvider) {
+        ngIntlTelInputProvider.set({
+            initialCountry: country,
+            preferredCountries: ["al", "ad", "at", "by", "be", "ba", "bg", "hr", "cz", "dk",
+                "ee", "fo", "fi", "fr", "de", "gi", "gr", "va", "hu", "is", "ie", "it", "lv",
+                "li", "lt", "lu", "mk", "mt", "md", "mc", "me", "nl", "no", "pl", "pt", "ro",
+                "ru", "sm", "rs", "sk", "si", "es", "se", "ch", "ua", "gb"
+            ]
+        });
+    }).config(function ($translateProvider) {
+        //$translateProvider.useMissingTranslationHandlerLog();
         $translateProvider
             .translations('en', en)
             .translations('fr', fr)
-            .registerAvailableLanguageKeys(['en', 'fr'], {
+            .translations('nl', nl)
+            .registerAvailableLanguageKeys(['en', 'fr', 'nl'], {
                 'en_*': 'en',
-                'fr_*': 'fr'
+                'fr_*': 'fr',
+	        'nl_*': 'nl'
             })
             .determinePreferredLanguage()
             .fallbackLanguage('en')
@@ -63,11 +75,11 @@ gak
     });
 
 
-gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $translate, MyKeyService) {
+gak.controller("AppCtrl", function ($scope, $mdDialog, $translate, MyKeyService) {
 
     $scope.translate = function (langKey) {
         $translate.use(langKey);
-    }
+    };
 
     $scope.openMenu = function ($mdOpenMenu, ev) {
         originatorEv = ev;
@@ -75,12 +87,14 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
     };
 
     $scope.isWorking = false;
+    $scope.keyExists = undefined;
 
     var request;
     var message = {
         title: "",
         text: "",
-    }
+    };
+
 
     function userNotFound(error) {
         $mdDialog.show({
@@ -91,7 +105,7 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
                     email: error.email
                 }
             }
-        })
+        });
     }
 
     function reqDone(data) {
@@ -101,7 +115,7 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
             locals: {
                 items: data
             }
-        })
+        });
     }
 
     function apiWarning(warning) {
@@ -115,6 +129,17 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
         });
     }
 
+    function checkMyKey() {
+        $scope.isWorking = true;
+        if (request) request.abort();
+        request = MyKeyService.checkMyKey();
+        request.then(function (promise) {
+            $scope.isWorking = false;
+            if (promise && promise.error) apiWarning(promise.error);
+            else $scope.keyExists = promise.data.result;
+        });
+    }
+
     $scope.getMyKey = function () {
         $scope.isWorking = true;
         if (request) request.abort();
@@ -122,9 +147,12 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
         request.then(function (promise) {
             $scope.isWorking = false;
             if (promise && promise.error) apiWarning(promise.error);
-            else reqDone(promise.data);
-        })
-    }
+            else {
+                checkMyKey();
+                reqDone(promise.data);
+            }
+        });
+    };
 
     $scope.revoke = function () {
         $mdDialog.show({
@@ -144,27 +172,33 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
                 if (promise && promise.error) {
                     if (promise.error.status == "not_found") userNotFound(promise.error);
                     else apiWarning(promise.error);
+                } else {
+                    checkMyKey();
+                    reqDone(promise.data);
                 }
-                else reqDone(promise.data);
-            })
+            });
         });
+    };
 
-    }
-
-    $scope.deliver = function () {
+    $scope.deliverByEmail = function () {
         $scope.isWorking = true;
         if (request) request.abort();
-        request = MyKeyService.deliverMyKey();
+        request = MyKeyService.deliverMyKey("email");
         request.then(function (promise) {
             $scope.isWorking = false;
             if (promise && promise.error) {
                 if (promise.error.status == "not_found") userNotFound(promise.error);
                 else apiWarning(promise.error);
-            }
-            else reqDone(promise.data);
-        })
-    }
-
+            } else reqDone(promise.data);
+        });
+    };
+    $scope.deliverBySMS = function () {
+        $mdDialog.show({
+            controller: 'DialogSendBySmsController',
+            templateUrl: 'modals/modalSendBySmsContent.html',
+            locals: {}
+        });
+    };
     $translate('errorTitle').then(function (errorTitle) {
         $scope.errorTitle = errorTitle;
     }, function (translationId) {
@@ -180,6 +214,8 @@ gak.controller("AppCtrl", function ($scope, $rootScope, $location, $mdDialog, $t
     }, function (translationId) {
         $scope.newKey = translationId;
     });
+
+    checkMyKey();
 });
 
 
@@ -197,11 +233,22 @@ gak.factory("MyKeyService", function ($http, $q, $rootScope) {
         return httpReq(request);
     }
 
-    function deliverMyKey() {
+    function checkMyKey() {
         var canceller = $q.defer();
         var request = $http({
-            url: "/api/myKey/",
+            url: "/api/exists",
+            method: "GET",
+            timeout: canceller.promise
+        });
+        return httpReq(request);
+    }
+
+    function deliverMyKey(method, params) {
+        var canceller = $q.defer();
+        var request = $http({
+            url: "/api/myKey/" + method,
             method: "POST",
+            data: params,
             timeout: canceller.promise
         });
         return httpReq(request);
@@ -223,7 +270,9 @@ gak.factory("MyKeyService", function ($http, $q, $rootScope) {
                 return response;
             },
             function (response) {
-                return { error: response.data };
+                return {
+                    error: response.data
+                };
             });
 
         promise.abort = function () {
@@ -240,8 +289,8 @@ gak.factory("MyKeyService", function ($http, $q, $rootScope) {
 
     return {
         getMyKey: getMyKey,
+        checkMyKey: checkMyKey,
         deliverMyKey: deliverMyKey,
         removeMyKey: removeMyKey
-    }
+    };
 });
-

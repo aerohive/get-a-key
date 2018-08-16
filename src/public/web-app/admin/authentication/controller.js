@@ -1,6 +1,7 @@
 angular
     .module('Authentication')
-    .controller("AuthenticationCtrl", function ($scope, $mdDialog, AzureAdService) {
+    .controller("AuthenticationCtrl", function ($scope, $mdDialog, $mdConstant, ConfigService) {
+        $scope.customKeys = [$mdConstant.KEY_CODE.ENTER, $mdConstant.KEY_CODE.COMMA, $mdConstant.KEY_CODE.SEMICOLON, $mdConstant.KEY_CODE.TAB];
 
         var initialized = false;
         var request;
@@ -10,9 +11,21 @@ angular
                 clientId: "",
                 clientSecret: "",
                 tenant: "",
-                resource: ""
+                resource: "",
+                allowExternalUsers: false,
+                userGroupsFilter: false,
+                userGroups: []
             },
-            adfs: {}
+            adfs: {
+                server: "",
+                entityID: "",
+                loginUrl: "",
+                logoutUrl: "",
+                entryPoint: "",
+                certs: [],
+                metadata: undefined
+            },
+            method: "adfs"
         };
 
         $scope.method = {
@@ -24,8 +37,49 @@ angular
         });
         $scope.$watch("method.adfs", function () {
             $scope.method.aad = !$scope.method.adfs;
-        })
+        });
+        $scope.$watch("admin.adfs.metadata", function (a, b) {
+            $scope.admin.adfs.server = "";
+            $scope.admin.adfs.entityID = "";
+            $scope.admin.adfs.loginUrl = "";
+            $scope.admin.adfs.logoutUrl = "";
+            $scope.admin.adfs.entryPoint = "";
+            $scope.admin.adfs.certs = [];
+                
+            if ($scope.admin.adfs.metadata) {
+                var start, stop, temp;
 
+                start = $scope.admin.adfs.metadata.indexOf("entityID=") + 10;
+                if (start) $scope.admin.adfs.entityID = $scope.admin.adfs.metadata.substring(start, $scope.admin.adfs.metadata.indexOf("\"", start));
+                start = -1;
+
+                start = $scope.admin.adfs.metadata.indexOf("SingleSignOnService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\"");
+                if (start) start = $scope.admin.adfs.metadata.indexOf("Location=", start) + 10;
+                if (start) $scope.admin.adfs.loginUrl = $scope.admin.adfs.metadata.substring(start, $scope.admin.adfs.metadata.indexOf("\"", start));
+
+                start = -1;
+                start = $scope.admin.adfs.metadata.indexOf("SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\"");
+                if (start) start = $scope.admin.adfs.metadata.indexOf("Location=", start) + 10;
+                if (start) $scope.admin.adfs.logoutUrl = $scope.admin.adfs.metadata.substring(start, $scope.admin.adfs.metadata.indexOf("\"", start));
+
+                start = 0;
+                stop = 0;
+                i = 0;
+                while (start >= 0 && i < 10) {
+                    start = $scope.admin.adfs.metadata.indexOf("<X509Certificate>", stop);
+                    if (start > 0) {
+                        stop = $scope.admin.adfs.metadata.indexOf("</X509Certificate>", start);
+                        var cert = $scope.admin.adfs.metadata.substring(start + 17, stop);
+                        if ($scope.admin.adfs.certs.indexOf(cert) < 0) $scope.admin.adfs.certs.push(cert);
+                    } else break;
+                    i++;
+                }
+            }
+        });
+        $scope.adfsCert = function () {
+            if ($scope.admin.adfs.server) return "https://" + $scope.admin.adfs.server + "/FederationMetadata/2007-06/FederationMetadata.xml";
+            else return false;
+        };
 
         function apiWarning(warning) {
             $mdDialog.show({
@@ -37,6 +91,7 @@ angular
                 }
             });
         }
+
         function reqDone() {
             $mdDialog.show({
                 controller: LocalModal,
@@ -44,8 +99,9 @@ angular
                 locals: {
                     items: "modal.save.authentication"
                 }
-            })
+            });
         }
+
         function LocalModal($scope, $mdDialog, items) {
             $scope.items = items;
             $scope.close = function () {
@@ -54,85 +110,93 @@ angular
             };
         }
 
-
         function azureAdSaveConfig() {
             $scope.isWorking = true;
             if (request) request.abort();
-            request = AzureAdService.post($scope.admin.azureAd);
+            request = ConfigService.post("aad", $scope.admin.azureAd);
             request.then(function (promise) {
                 $scope.isWorking = false;
                 if (promise && promise.error) apiWarning(promise.error);
                 else reqDone();
-            })
+            });
+        }
+
+        function adfsSaveConfig() {
+            $scope.isWorking = true;
+            $scope.admin.adfs.entryPoint = $scope.admin.adfs.loginUrl;
+            if (request) request.abort();
+            console.log($scope.admin);
+            request = ConfigService.post("adfs", $scope.admin.adfs);
+            request.then(function (promise) {
+                $scope.isWorking = false;
+                if (promise && promise.error) apiWarning(promise.error);
+                else reqDone();
+            });
         }
 
         $scope.isWorking = true;
-        request = AzureAdService.get();
+        request = ConfigService.get();
         request.then(function (promise) {
             $scope.isWorking = false;
             if (promise && promise.error) apiWarning(promise.error);
             else {
-                $scope.method.aad = true;
-                $scope.method.adfs = false;
-                if (promise.data.azureAd) {
-                    $scope.admin.azureAd = promise.data.azureAd;
-                } else {
-                    $scope.admin = {
-                        azureAd: {
-                            clientId: "",
-                            clientSecret: "",
-                            tenant: "",
-                            resource: ""
-                        },
-                        adfs: {}
-                    };
-                }
-                $scope.admin.azureAd.signin = promise.data.signin;
-                $scope.admin.azureAd.callback = promise.data.callback;
-                $scope.admin.azureAd.logout = promise.data.logout;
+                if (promise.data.method) $scope.admin.method = promise.data.method;
+                if (promise.data.azure) $scope.admin.azureAd = promise.data.azure;
+                if (promise.data.adfs) $scope.admin.adfs = promise.data.adfs;
             }
-        })
+        });
+
 
 
 
         $scope.isValid = function () {
-            if ($scope.method.aad == true) {
+            if ($scope.admin.method == 'azure') {
                 if (!$scope.admin.azureAd.clientID || $scope.admin.azureAd.clientID == "") return false;
                 else if (!$scope.admin.azureAd.clientSecret || $scope.admin.azureAd.clientSecret == "") return false;
                 else if (!$scope.admin.azureAd.tenant || $scope.admin.azureAd.tenant == "") return false;
                 else if (!$scope.admin.azureAd.resource || $scope.admin.azureAd.resource == "") return false;
                 else return true;
-            }
-            else if (isWorking) return true;
+            } else if ($scope.admin.method == "adfs") {
+                if (!$scope.admin.adfs.entityID || $scope.admin.adfs.entityID == "") return false;
+                else if (!$scope.admin.adfs.loginUrl || $scope.admin.adfs.loginUrl == "") return false;
+                else if (!$scope.admin.adfs.logoutUrl || $scope.admin.adfs.logoutUrl == "") return false;
+                else return true;
+            } else if (isWorking) return true;
             else return false;
-        }
+        };
 
         $scope.save = function () {
+            console.log($scope.admin.method);
             $scope.isWorking = true;
-            if ($scope.method.aad == true) {
+            if ($scope.admin.method == 'azure') {
                 azureAdSaveConfig();
+            } else if ($scope.admin.method == "adfs") {
+                adfsSaveConfig();
             }
-        }
+        };
     })
-    .factory("AzureAdService", function ($http, $q, $rootScope) {
 
-        function get(azureAdConfig) {
+
+    .factory("ConfigService", function ($http, $q, $rootScope) {
+
+        function get() {
             var canceller = $q.defer();
             var request = $http({
-                url: "/api/aad/",
+                url: "/api/auth/",
                 method: "GET",
-                data: { azureAd: azureAdConfig },
                 timeout: canceller.promise
             });
             return httpReq(request);
         }
 
-        function post(azureAdConfig) {
+        function post(method, config) {
             var canceller = $q.defer();
             var request = $http({
-                url: "/api/aad/",
+                url: "/api/auth/" + method + "/",
                 method: "POST",
-                data: { azureAd: azureAdConfig },
+                data: {
+                    config: config
+                },
                 timeout: canceller.promise
             });
             return httpReq(request);
@@ -144,7 +208,9 @@ angular
                     return response;
                 },
                 function (response) {
-                    return { error: response.data };
+                    return {
+                        error: response.data
+                    };
                 });
 
             promise.abort = function () {
@@ -162,6 +228,5 @@ angular
         return {
             get: get,
             post: post
-        }
+        };
     });
-

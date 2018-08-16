@@ -1,4 +1,3 @@
-
 angular.module("Modals", []);
 angular.module("Authentication", []);
 angular.module("Configuration", []);
@@ -17,7 +16,8 @@ var gak = angular.module("gak", [
     'pascalprecht.translate',
     'Authentication',
     'Configuration',
-    'Customization'
+    'Customization',
+    'ngIntlTelInput'
 ]);
 
 gak
@@ -42,7 +42,12 @@ gak
                 redirectTo: "/configuration"
             });
     })
-    .config(function ($mdThemingProvider) {
+    .config(function (ngIntlTelInputProvider) {
+        ngIntlTelInputProvider.set({
+            initialCountry: "fr",
+            separateDialCode: true
+        });
+    }).config(function ($mdThemingProvider) {
         $mdThemingProvider.definePalette('ahBlue', colors)
             .theme('default')
             .primaryPalette("ahBlue", {
@@ -66,13 +71,15 @@ gak
         $httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache';
         $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
     }]).config(function ($translateProvider) {
-        $translateProvider.useMissingTranslationHandlerLog();
+        //$translateProvider.useMissingTranslationHandlerLog();
         $translateProvider
             .translations('en', en)
             .translations('fr', fr)
-            .registerAvailableLanguageKeys(['en', 'fr'], {
+            .translations('nl', nl)
+            .registerAvailableLanguageKeys(['en', 'fr', 'nl'], {
                 'en_*': 'en',
-                'fr_*': 'fr'
+                'fr_*': 'fr',
+	        'nl_*': 'nl'
             })
             .determinePreferredLanguage()
             .fallbackLanguage('en')
@@ -87,7 +94,7 @@ gak
 gak.controller('AppCtrl', function ($scope, $translate, $location) {
     $scope.translate = function (langKey) {
         $translate.use(langKey);
-    }
+    };
 
     $scope.openMenu = function ($mdOpenMenu, ev) {
         originatorEv = ev;
@@ -97,10 +104,9 @@ gak.controller('AppCtrl', function ($scope, $translate, $location) {
     $scope.active = function (tab) {
         if ($location.path() == '/' + tab) return true;
         else return false;
-    }
+    };
     $scope.select = function (tab) {
-        $location.path('/'+tab);
+        $location.path('/' + tab);
     };
 
 });
-

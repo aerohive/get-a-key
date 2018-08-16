@@ -18,9 +18,11 @@ function create_app_container
     $DOCKER create \
     --security-opt label:disable \
     -v $PERSISTANT_FOLDER/$APP_NAME/config.js:$APP_CNF_LOC/config.js:ro \
+    -v $PERSISTANT_FOLDER/$APP_NAME/certs/:$APP_CNF_LOC/certs/:rw \
     --link $DB_NAME:mongo \
     --name="$APP_NAME" \
     --restart="on-failure:5" \
+    --memory=128m \
     -e "VIRTUAL_HOST=$NODEJS_VHOST" \
     -e "LETSENCRYPT_HOST=$NODEJS_VHOST" \
     -e "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" \
@@ -867,7 +869,7 @@ function create_mongo_container
     echo -e "${INFOC}INFO${NC}: $DB_NAME container not present. Creating it..."
     $DOCKER create \
     --name $DB_NAME \
-    -v $DB_FOLDER:/data/db \
+    -v $DB_FOLDER:/data/db:Z \
     $DB_IMG
     if [ $? -eq 0 ]
     then
@@ -1250,6 +1252,7 @@ function init_script
   check_folder "Database" $DB_FOLDER
   check_folder "Certificates" $NGINX_CERTS_FOLDER
   check_folder "App" "$PERSISTANT_FOLDER/$APP_NAME"
+  check_folder "App certificates" "$PERSISTANT_FOLDER/$APP_NAME/certs/"
   check_folder "bower_components" "$PERSISTANT_FOLDER/bower_components"
 
   init_acs_conf

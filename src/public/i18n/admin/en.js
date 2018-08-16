@@ -1,6 +1,6 @@
 var en = {
     logout: "Logout",
-    language: "Langue",
+    language: "language",
     save: "Save",
     enabled: "Enabled",
     disabled: "Disabled",
@@ -9,6 +9,7 @@ var en = {
         loginUrl: "LoginURL (to configure the CWP):",
         userAccount: "User Account",
         userGroup: "User Group",
+        customizeDefaultPhonePrefix: "Customize default phone number prefix"
     },
     custom: {
         custom: "Customization",
@@ -16,7 +17,7 @@ var en = {
             logo: "Logos",
             header: "Header Logo",
             login: "Login Page Logo"
-            },
+        },
         headerLogo: "Header Logo",
         loginLogo: "Login Logo",
         preview: "Preview",
@@ -54,10 +55,17 @@ var en = {
             signinURL: "Signin URL:",
             callbackURL: "Callback URL:",
             logoutURL: "logoutURL:",
+            external: "Allow External Users to get a key",
+            unlicensed: "Allow Users without license",
+            groupsFilter: "Only authorize users belonging to the following user groups"
         },
         adfs: {
             adfs: "AD Federation Service",
-            params: "ADFS configuration"
+            params: "ADFS configuration",
+            getAdfsMetadata: "Download ADFS Metadata",
+            pasteAdfsMetadata: "Paste ADFS Metadata",
+            getAppCertificate: "Download Get-A-Key Certificate",
+            server: "ADFS Server FQDN"
         },
     },
     modal: {
